@@ -6,11 +6,16 @@
 #include "GameplayEffectExtension.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "GameFramework/Character.h"
+#include "AuraGameplayTags.h"
 
 UAuraAttributeSet::UAuraAttributeSet()
 {
-	InitHealth(10.f); 
-	InitMana(10.f); 
+	const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get(); 
+
+	FAttributeSignature StrengthDelegate; 
+	StrengthDelegate.BindStatic(GetStrengthAttribute); 
+	TagsToAttributes.Add(GameplayTags.Attributes_Primary_Strength, StrengthDelegate); 
+
 }
 
 void UAuraAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

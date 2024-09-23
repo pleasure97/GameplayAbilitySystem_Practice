@@ -30,7 +30,7 @@ void AAuraCharacterBase::InitAbilityActorInfo()
 
 }
 
-void AAuraCharacterBase::ApplyGameEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass, float Level) const
+void AAuraCharacterBase::ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass, float Level) const
 {
 	check(IsValid(GetAbilitySystemComponent()));
 	check(GameplayEffectClass);
@@ -42,7 +42,8 @@ void AAuraCharacterBase::ApplyGameEffectToSelf(TSubclassOf<UGameplayEffect> Game
 
 void AAuraCharacterBase::InitializeDefaultAttributes() const
 {
-	ApplyGameEffectToSelf(DefaultPrimaryAttributes, 1.f); 
-	ApplyGameEffectToSelf(DefaultSecondaryAttributes, 1.f); 
+	ApplyEffectToSelf(DefaultPrimaryAttributes, 1.f); 
+	ApplyEffectToSelf(DefaultSecondaryAttributes, 1.f); 
+	ApplyEffectToSelf(DefaultVitalAttributes, 1.f); 
 }
 
