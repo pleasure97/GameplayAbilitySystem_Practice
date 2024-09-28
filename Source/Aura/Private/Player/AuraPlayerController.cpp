@@ -78,28 +78,29 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 		if (GetASC()) {GetASC()->AbilityInputTagReleased(InputTag); }
 	}
 
-	if (bTargeting)
+	if (GetASC())
 	{
-		if (GetASC()) { GetASC()->AbilityInputTagReleased(InputTag); }
+		GetASC()->AbilityInputTagReleased(InputTag); 
 	}
-	else
+
+	if (!bTargeting && !bShiftKeyDown)
 	{
-		APawn* ControlledPawn = GetPawn(); 
+		APawn* ControlledPawn = GetPawn();
 		if (FollowTime < ShortPressThreshold && ControlledPawn)
 		{
 			if (UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(this, ControlledPawn->GetActorLocation(), CachedDestination))
 			{
-				Spline->ClearSplinePoints(); 
+				Spline->ClearSplinePoints();
 				for (const FVector& PointLocation : NavPath->PathPoints)
 				{
-					Spline->AddSplinePoint(PointLocation, ESplineCoordinateSpace::World); 
+					Spline->AddSplinePoint(PointLocation, ESplineCoordinateSpace::World);
 				}
-				CachedDestination = NavPath->PathPoints[NavPath->PathPoints.Num() - 1]; 
-				bAutoRunning = true; 
+				CachedDestination = NavPath->PathPoints[NavPath->PathPoints.Num() - 1];
+				bAutoRunning = true;
 			}
 		}
 		FollowTime = 0.f;
-		bTargeting = false; 
+		bTargeting = false;
 	}
 }
 
@@ -111,7 +112,7 @@ void AAuraPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 		return; 
 	}
 
-	if (bTargeting)
+	if (bTargeting || bShiftKeyDown)
 	{
 		if (GetASC()){ GetASC()->AbilityInputTagHeld(InputTag); }
 	}
@@ -168,6 +169,8 @@ void AAuraPlayerController::SetupInputComponent()
 
 	UAuraInputComponent* AuraInputComponent = CastChecked<UAuraInputComponent>(InputComponent); 
 	AuraInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAuraPlayerController::Move); 
+	AuraInputComponent->BindAction(ShiftAction, ETriggerEvent::Started, this, &AAuraPlayerController::ShiftPressed); 
+	AuraInputComponent->BindAction(ShiftAction, ETriggerEvent::Completed, this, &AAuraPlayerController::ShiftReleased); 
 	AuraInputComponent->BindAbilityActions(InputConfig, this,
 		&ThisClass::AbilityInputTagPressed, &ThisClass::AbilityInputTagReleased, &ThisClass::AbilityInputTagHeld);
 }
