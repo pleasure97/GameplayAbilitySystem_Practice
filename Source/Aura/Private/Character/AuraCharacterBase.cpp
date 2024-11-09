@@ -60,11 +60,22 @@ void AAuraCharacterBase::BeginPlay()
 	Super::BeginPlay();
 }
 
-FVector AAuraCharacterBase::GetCombatSocketLocation()
+FVector AAuraCharacterBase::GetCombatSocketLocation_Implementation()
 {
-	check(Weapon); 
-	return Weapon->GetSocketLocation(WeaponTipSocketName); 
+	check(Weapon);
+	return Weapon->GetSocketLocation(WeaponTipSocketName);
 }
+
+bool AAuraCharacterBase::IsDead_Implementation()
+{
+	return false;
+}
+
+AActor* AAuraCharacterBase::GetAvatar_Implementation()
+{
+	return nullptr;
+}
+
 
 void AAuraCharacterBase::InitAbilityActorInfo()
 {
