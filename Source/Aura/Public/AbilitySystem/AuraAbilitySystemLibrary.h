@@ -13,6 +13,7 @@ class UAbilitySystemComponent;
 class USpellMenuWidgetController;
 struct FWidgetControllerParams; 
 class UAbilityInfo; 
+struct FDamageEffectParams; 
 
 /**
  * 
@@ -66,6 +67,9 @@ public:
 
 	UFUNCTION(BlueprintPure, BlueprintCallable, Category = "AuraAbilitySystemLibrary|GameplayMechanics")
 	static bool IsNotFriend(AActor* FirstActor, AActor* SecondActor);
+
+	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|DamageEffect")
+	static FGameplayEffectContextHandle ApplyDamageEffect(const FDamageEffectParams& DamageEffectParams); 
 
 	static int32 GetXPRewardForClassAndLevel(const UObject* WorldContextObject, ECharacterClass CharacterClass, int32 CharacterLevel);
 };
