@@ -9,11 +9,16 @@
 #include "AuraGameplayTags.h"
 #include "NiagaraSystem.h"
 #include "Kismet/GameplayStatics.h"
+#include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 
 
 AAuraCharacterBase::AAuraCharacterBase()
 {
 	PrimaryActorTick.bCanEverTick = false; 
+
+	BurnDebuffComponent = CreateDefaultSubobject<UDebuffNiagaraComponent>(TEXT("BurnDebuffComponent")); 
+	BurnDebuffComponent->SetupAttachment(GetRootComponent()); 
+	BurnDebuffComponent->DebuffTag = FAuraGameplayTags::Get().Debuff_Burn; 
 
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore); 
 	GetCapsuleComponent()->SetGenerateOverlapEvents(false); 
@@ -36,27 +41,31 @@ UAnimMontage* AAuraCharacterBase::GetHitReactMontage_Implementation()
 	return HitReactMontage; 
 }
 
-void AAuraCharacterBase::Die()
+void AAuraCharacterBase::Die(const FVector& DeathImpulse)
 {
 	Weapon->DetachFromComponent(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true)); 
-	MulticastHandleDeath(); 
+	MulticastHandleDeath(DeathImpulse); 
 }
 
-void AAuraCharacterBase::MulticastHandleDeath_Implementation()
+void AAuraCharacterBase::MulticastHandleDeath_Implementation(const FVector& DeathImpulse)
 {
 	UGameplayStatics::PlaySoundAtLocation(this, DeathSound, GetActorLocation(), GetActorRotation()); 
 	Weapon->SetSimulatePhysics(true); 
 	Weapon->SetEnableGravity(true); 
 	Weapon->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly); 
+	Weapon->AddImpulse(DeathImpulse * 0.1f, NAME_None, true); 
 
 	GetMesh()->SetEnableGravity(true); 
 	GetMesh()->SetSimulatePhysics(true); 
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly); 
 	GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block); 
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
+	GetMesh()->AddImpulse(DeathImpulse, NAME_None, true); 
 
 	Dissolve(); 
 	bDead = true; 
+	OnDeath.Broadcast(this); 
+	BurnDebuffComponent->Deactivate(); 
 }
 
 // Called when the game starts or when spawned
@@ -137,6 +146,16 @@ void AAuraCharacterBase::IncrementMinionCount_Implementation(int32 Amount)
 ECharacterClass AAuraCharacterBase::GetCharacterClass_Implementation()
 {
 	return CharacterClass; 
+}
+
+FOnASCRegistered AAuraCharacterBase::GetOnASCRegisteredDelegate()
+{
+	return OnASCRegistered;
+}
+
+FOnDeath AAuraCharacterBase::GetOnDeathDelegate()
+{
+	return OnDeath; 
 }
 
 void AAuraCharacterBase::InitAbilityActorInfo()
