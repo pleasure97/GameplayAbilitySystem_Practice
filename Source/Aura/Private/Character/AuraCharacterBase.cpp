@@ -10,6 +10,7 @@
 #include "NiagaraSystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 
 
 AAuraCharacterBase::AAuraCharacterBase()
@@ -156,6 +157,11 @@ FOnASCRegistered AAuraCharacterBase::GetOnASCRegisteredDelegate()
 FOnDeath AAuraCharacterBase::GetOnDeathDelegate()
 {
 	return OnDeath; 
+}
+
+USkeletalMeshComponent* AAuraCharacterBase::GetWeapon_Implementation()
+{
+	return Weapon;
 }
 
 void AAuraCharacterBase::InitAbilityActorInfo()

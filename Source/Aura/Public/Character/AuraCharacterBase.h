@@ -16,6 +16,7 @@ class UGameplayAbility;
 class UAnimMontage; 
 class UNiagaraSystem;
 class UDebuffNiagaraComponent; 
+class USkeletalMeshComponent; 
 
 UCLASS(Abstract)
 class AURA_API AAuraCharacterBase : public ACharacter, public IAbilitySystemInterface, public ICombatInterface
@@ -41,6 +42,7 @@ public:
 	virtual ECharacterClass GetCharacterClass_Implementation() override; 
 	virtual FOnASCRegistered GetOnASCRegisteredDelegate() override; 
 	virtual FOnDeath GetOnDeathDelegate() override; 
+	virtual USkeletalMeshComponent* GetWeapon_Implementation() override; 
 	/** End Combat Interface */
 
 	FOnASCRegistered OnASCRegistered; 
