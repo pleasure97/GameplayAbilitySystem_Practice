@@ -243,7 +243,7 @@ void UAuraAttributeSet::HandleIncomingXP(const FEffectProperties& Props)
 			for (int32 i = 0; i < NumLevelUps; i++)
 			{
 				SpellPointsReward += IPlayerInterface::Execute_GetSpellPointsReward(Props.SourceCharacter, CurrentLevel + i); 
-				AttributePointsReward += IPlayerInterface::Execute_GetAttributePointsReward(Props.SourceASC, CurrentLevel + i); 
+				AttributePointsReward += IPlayerInterface::Execute_GetAttributePointsReward(Props.SourceCharacter, CurrentLevel + i); 
 			}
 			IPlayerInterface::Execute_AddToAttributePoints(Props.SourceCharacter, AttributePointsReward);
 			IPlayerInterface::Execute_AddToSpellPoints(Props.SourceCharacter, SpellPointsReward);

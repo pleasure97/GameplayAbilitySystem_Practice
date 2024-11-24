@@ -173,11 +173,6 @@ bool UAuraAbilitySystemComponent::SlotIsEmpty(const FGameplayTag& Slot)
 	return true; 
 }
 
-bool UAuraAbilitySystemComponent::AbilityHasSlot(const FGameplayAbilitySpec& Spec, const FGameplayTag& Slot)
-{
-	return Spec.DynamicAbilityTags.HasTagExact(Slot);
-}
-
 FGameplayAbilitySpec* UAuraAbilitySystemComponent::GetSpecWithSlot(const FGameplayTag& Slot)
 {
 	FScopedAbilityListLock ActiveScopeLoc(*this); 
@@ -198,6 +193,17 @@ bool UAuraAbilitySystemComponent::IsPassiveAbility(const FGameplayAbilitySpec& S
 	const FAuraAbilityInfo& Info = AbilityInfo->FindAbilityInfoForTag(AbilityTag); 
 	const FGameplayTag AbilityType = Info.AbilityType; 
 	return AbilityType.MatchesTagExact(FAuraGameplayTags::Get().Abilities_Type_Passive); 
+}
+
+void UAuraAbilitySystemComponent::AssignSlotToAbility(FGameplayAbilitySpec& Spec, const FGameplayTag& Slot)
+{
+	ClearSlot(&Spec); 
+	Spec.DynamicAbilityTags.AddTag(Slot); 
+}
+
+void UAuraAbilitySystemComponent::MulticastActivatePassiveEffect_Implementation(const FGameplayTag& AbilityTag, bool bActivate)
+{
+	ActivatePassiveEffect.Broadcast(AbilityTag, bActivate);
 }
 
 FGameplayAbilitySpec* UAuraAbilitySystemComponent::GetSpecFromAbilityTag(const FGameplayTag& AbilityTag)
@@ -314,6 +320,7 @@ void UAuraAbilitySystemComponent::ServerEquipAbility_Implementation(const FGamep
 					// IsPassiveAbility(Spec)
 					if (IsPassiveAbility(*SpecWithSlot))
 					{
+						MulticastActivatePassiveEffect(GetAbilityTagFromSpec(*SpecWithSlot), false); 
 						DeactivatePassiveAbility.Broadcast(GetAbilityTagFromSpec(*SpecWithSlot)); 
 					}
 					ClearSlot(SpecWithSlot); 
@@ -325,29 +332,13 @@ void UAuraAbilitySystemComponent::ServerEquipAbility_Implementation(const FGamep
 				if (IsPassiveAbility(*AbilitySpec))
 				{
 					TryActivateAbility(AbilitySpec->Handle); 
+					MulticastActivatePassiveEffect(AbilityTag, true);
 				}
 			}
 
 			// Assign slot to ability 
-
-
-
-
-
-			//// Remove this InputTag (slot) from any ability that has it. 
-			//ClearAbilitiesOfSlot(Slot); 
-
-			//// Clear this ability's slot, just in case, if it's a different slot. 
-			//ClearSlot(AbilitySpec); 
-
-			//// Now, assign this ability to this slot. 
-			//AbilitySpec->DynamicAbilityTags.AddTag(Slot); 
-			//if (Status.MatchesTagExact(GameplayTags.Abilities_Status_Unlocked))
-			//{
-			//	AbilitySpec->DynamicAbilityTags.RemoveTag(GameplayTags.Abilities_Status_Unlocked); 
-			//	AbilitySpec->DynamicAbilityTags.AddTag(GameplayTags.Abilities_Status_Equipped); 
-			//}
-			//MarkAbilitySpecDirty(*AbilitySpec); 
+			AssignSlotToAbility(*AbilitySpec, Slot); 
+			MarkAbilitySpecDirty(*AbilitySpec); 
 		}
 		ClientEquipAbility(AbilityTag, GameplayTags.Abilities_Status_Equipped, Slot, PrevSlot); 
 	}
