@@ -15,6 +15,7 @@ class UAttributeSet;
 class ULevelUpInfo; 
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerStateChanged, int32 /*Stat Value*/)
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnLevelChanged, int32 /*Stat Value*/, bool /*bLevelUp*/)
 
 UCLASS()
 class AURA_API AAuraPlayerState : public APlayerState, public IAbilitySystemInterface
@@ -31,7 +32,7 @@ public:
 	TObjectPtr<ULevelUpInfo> LevelUpInfo; 
 
 	FOnPlayerStateChanged OnXPChangedDelegate; 
-	FOnPlayerStateChanged OnLevelChangedDelegate; 
+	FOnLevelChanged OnLevelChangedDelegate; 
 	FOnPlayerStateChanged OnAttributePointsChangedDelegate; 
 	FOnPlayerStateChanged OnSpellPointsChangedDelegate; 
 
@@ -47,6 +48,8 @@ public:
 
 	void SetXP(int32 InXP); 
 	void SetLevel(int32 InLevel); 
+	void SetAttributePoints(int32 InAttributePoints); 
+	void SetSpellPoints(int32 InSpellPoints); 
 	
 protected:
 	UPROPERTY(VisibleAnywhere)
@@ -59,7 +62,7 @@ protected:
 	int32 Level = 1; 
 
 	UPROPERTY(VisibleAnywhere, ReplicatedUsing = OnRep_XP)
-	int32 XP = 1; 
+	int32 XP = 0; 
 
 	UPROPERTY(VisibleAnywhere, ReplicatedUsing = OnRep_AttributePoints)
 	int32 AttributePoints = 0; 
