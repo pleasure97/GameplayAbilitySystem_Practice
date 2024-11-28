@@ -16,7 +16,6 @@
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 #include "Game/AuraGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
-#include "Game/AuraGameInstance.h"
 #include "Game/LoadScreenSaveGame.h"
 #include "AbilitySystem/AuraAttributeSet.h"
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
@@ -57,6 +56,12 @@ void AAuraCharacter::PossessedBy(AController* NewController)
 	InitAbilityActorInfo(); 
 
 	LoadProgress(); 
+
+	if (AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this)))
+	{
+		AuraGameMode->LoadWorldState(GetWorld()); 
+	}
+
 }
 
 void AAuraCharacter::LoadProgress()
@@ -74,7 +79,10 @@ void AAuraCharacter::LoadProgress()
 		}
 		else
 		{
-			// TODO - Load in Abilities from Disk 
+			if (UAuraAbilitySystemComponent* AuraASC = Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent))
+			{
+				AuraASC->AddCharacterAbilitiesFromSaveData(SaveData); 
+			}
 
 			if (AAuraPlayerState* AuraPlayerState = Cast<AAuraPlayerState>(GetPlayerState()))
 			{
@@ -211,6 +219,7 @@ void AAuraCharacter::SaveProgress_Implementation(const FName& CheckpointTag)
 
 		UAuraAbilitySystemComponent* AuraASC = Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent); 
 		FForEachAbility SaveAbiltiyDelegate;
+		SaveData->SavedAbilities.Empty(); 
 		SaveAbiltiyDelegate.BindLambda(
 			[this, AuraASC, SaveData](const FGameplayAbilitySpec& AbilitySpec)
 			{
@@ -226,7 +235,7 @@ void AAuraCharacter::SaveProgress_Implementation(const FName& CheckpointTag)
 				SavedAbility.AbilityTag = AbilityTag;
 				SavedAbility.AbilityType = Info.AbilityType;
 
-				SaveData->SavedAbilities.Add(SavedAbility); 
+				SaveData->SavedAbilities.AddUnique(SavedAbility); 
 			});
 		AuraASC->ForEachAbility(SaveAbiltiyDelegate); 
 
