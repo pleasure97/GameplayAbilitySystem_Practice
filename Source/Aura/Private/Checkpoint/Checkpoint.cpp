@@ -45,7 +45,11 @@ void ACheckpoint::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 
 		if (AAuraGameModeBase* AuraGM = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this)))
 		{
-			AuraGM->SaveWorldState(GetWorld()); 
+			const UWorld* World = GetWorld(); 
+			FString MapName = World->GetMapName(); 
+			MapName.RemoveFromStart(World->StreamingLevelsPrefix); 
+
+			AuraGM->SaveWorldState(GetWorld(), MapName); 
 		}
 		IPlayerInterface::Execute_SaveProgress(OtherActor, PlayerStartTag); 
 		HandleGlowEffects(); 
@@ -56,7 +60,10 @@ void ACheckpoint::BeginPlay()
 {
 	Super::BeginPlay(); 
 
-	Sphere->OnComponentBeginOverlap.AddDynamic(this, &ACheckpoint::OnSphereOverlap); 
+	if (bBindOverlapCallback)
+	{
+		Sphere->OnComponentBeginOverlap.AddDynamic(this, &ACheckpoint::OnSphereOverlap);
+	}
 }
 
 void ACheckpoint::SetMoveToLocation_Implementation(FVector& OutDestination)
@@ -66,8 +73,10 @@ void ACheckpoint::SetMoveToLocation_Implementation(FVector& OutDestination)
 
 void ACheckpoint::HighlightActor_Implementation()
 {
-	CheckpointMesh->SetRenderCustomDepth(true); 
-
+	if (!bReached)	
+	{
+		CheckpointMesh->SetRenderCustomDepth(true);
+	}
 }
 
 void ACheckpoint::UnHighlightActor_Implementation()
